@@ -1,0 +1,1363 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Study With Me</title>
+<style>
+  :root {
+    color-scheme: light;
+    --bg:#f6f8ff; --card:#ffffff; --text:#2d3250; --muted:#6f7691; --border:#e6e9f7;
+    --primary:#6a72f0; --primary-d:#5a62e0; --soft:#eef0ff;
+    --q1:#ff8a8a; --q2:#5fd1a4; --q3:#ffc46b; --q4:#b5bdd6;
+    --radius:16px; --shadow:0 4px 16px rgba(106,114,240,.10);
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; color:var(--text); line-height:1.5;
+    background:linear-gradient(180deg,#f3f6ff 0%,#fff6fb 100%); background-attachment:fixed; }
+  .hidden { display:none !important; }
+  h2 { margin-top:0; } h4 { margin:0 0 6px; }
+  .meta { font-size:.78rem; color:var(--muted); }
+  .empty { color:var(--muted); font-size:.85rem; font-style:italic; }
+  .err { color:#e05555; font-size:.88rem; min-height:1.2em; margin:8px 0 0; }
+  .ok { color:#2a9d6f; font-size:.88rem; min-height:1.2em; margin:8px 0 0; }
+  .warn { position:fixed; left:12px; right:12px; bottom:12px; z-index:100; background:#fff6d9; border:1px solid #ffe29a;
+    color:#6b4e00; border-radius:12px; padding:10px 14px; font-size:.88rem; box-shadow:0 4px 16px rgba(0,0,0,.12); }
+
+  /* Boutons & champs */
+  label { display:flex; flex-direction:column; font-size:.85rem; color:var(--muted); gap:4px; }
+  input[type=text], input[type=email], input[type=password], input[type=number], input[type=date], input[type=time], select, textarea {
+    padding:9px 10px; border:1px solid var(--border); border-radius:12px; background:#fbfcff; color:var(--text); font-size:.95rem; font-family:inherit; width:100%; }
+  input:focus, select:focus, textarea:focus { outline:2px solid #c7cbff; border-color:var(--primary); }
+  textarea { resize:vertical; min-height:70px; }
+  input[type=range] { width:auto; flex:1; accent-color:var(--primary); }
+  .btn { background:var(--primary); color:#fff; border:none; border-radius:12px; padding:10px 18px; cursor:pointer; font-size:.95rem; font-weight:600; transition:.15s; }
+  .btn:hover { background:var(--primary-d); transform:translateY(-1px); }
+  .btn:disabled { opacity:.4; cursor:not-allowed; transform:none; }
+  .btn.ghost { background:#fff; color:var(--primary); border:1.5px solid #c9ceff; }
+  .btn.ghost:hover { background:var(--soft); }
+  .btn.ghost.on { background:var(--primary); color:#fff; border-color:var(--primary); }
+  .btn.small { padding:7px 12px; font-size:.85rem; }
+  .icon { border:none; background:transparent; cursor:pointer; font-size:1rem; color:var(--muted); }
+  .icon:hover { color:#e05555; }
+  .card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow); padding:18px; margin-bottom:18px; }
+  .badge { display:inline-block; font-size:.7rem; padding:1px 8px; border-radius:999px; background:var(--soft); color:var(--primary); margin-right:4px; font-weight:600; }
+  .badge.pareto { background:#fff0d6; color:#c27a00; }
+
+  /* Écrans connexion / profil */
+  .screen { min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px;
+    background:linear-gradient(135deg,#c7d2fe 0%,#fbcfe8 55%,#fde7c3 100%); }
+  .screen .card { width:100%; max-width:480px; margin:0; }
+  .brand { text-align:center; margin-bottom:12px; }
+  .brand h1 { margin:0; font-size:1.8rem; }
+  .authtabs { display:flex; gap:8px; margin-bottom:14px; }
+  .authtabs .btn { flex:1; }
+  .form { display:flex; flex-direction:column; gap:12px; }
+  .radios { display:flex; gap:10px; }
+  .radios label { flex:1; flex-direction:row; align-items:center; gap:8px; color:var(--text); border:1.5px solid var(--border); border-radius:12px; padding:10px; cursor:pointer; }
+  .radios input { width:auto; }
+  .chips { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+  .chip { background:var(--soft); border:1px solid #c9ceff; color:var(--primary); border-radius:999px; padding:3px 12px; font-size:.85rem; display:inline-flex; gap:6px; align-items:center; text-decoration:none; }
+  a.chip:hover { background:#dfe2ff; }
+  .chip button { border:none; background:transparent; cursor:pointer; color:inherit; font-size:.9rem; padding:0; }
+  .row2 { display:flex; gap:8px; }
+
+  /* Application */
+  .topbar { background:linear-gradient(135deg,#c7d2fe 0%,#fbcfe8 60%,#fde7c3 100%); color:var(--text); padding:16px 22px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; }
+  .topbar h1 { margin:0; font-size:1.5rem; }
+  .topbar .who { font-size:1rem; font-weight:600; }
+  .topbar .btn { background:rgba(255,255,255,.75); color:#4a4f8a; }
+  .topbar .btn:hover { background:#fff; }
+  .layout { display:grid; grid-template-columns:minmax(0,1fr) 360px; gap:18px; max-width:1500px; margin:0 auto; padding:16px; align-items:start; }
+  @media (max-width:1000px){ .layout { grid-template-columns:1fr; } }
+  nav.tabs { display:flex; gap:6px; flex-wrap:wrap; padding:10px; background:var(--card); border:1px solid var(--border); border-radius:var(--radius); margin-bottom:16px; box-shadow:var(--shadow); }
+  nav.tabs button { border:none; background:transparent; color:var(--text); padding:8px 14px; border-radius:999px; cursor:pointer; font-size:.95rem; }
+  nav.tabs button.active, nav.tabs button:hover { background:var(--primary); color:#fff; }
+  section.tab { display:none; } section.tab.active { display:block; }
+
+  form.add { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:12px; align-items:end; }
+  .checks { display:flex; gap:14px; flex-wrap:wrap; }
+  .checks label { flex-direction:row; align-items:center; gap:6px; color:var(--text); }
+  .checks input { width:auto; }
+  .stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:12px; margin-bottom:18px; }
+  .stat { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:14px; text-align:center; box-shadow:var(--shadow); }
+  .stat b { display:block; font-size:1.5rem; color:var(--primary); }
+  .stat span { color:var(--muted); font-size:.82rem; }
+  .matrix { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  @media (max-width:700px){ .matrix { grid-template-columns:1fr; } }
+  .quad { background:var(--card); border:2px dashed var(--border); border-radius:var(--radius); padding:12px; min-height:200px; transition:.15s; }
+  .quad h3 { margin:0 0 2px; font-size:1.05rem; }
+  .quad small { color:var(--muted); display:block; margin-bottom:10px; }
+  .quad[data-q="1"] { border-top:5px solid var(--q1); background:#fff3f3; }
+  .quad[data-q="2"] { border-top:5px solid var(--q2); background:#f0faf6; }
+  .quad[data-q="3"] { border-top:5px solid var(--q3); background:#fff9ec; }
+  .quad[data-q="4"] { border-top:5px solid var(--q4); background:#f4f6fb; }
+  .quad.over { background:var(--soft) !important; border-color:var(--primary); }
+  .task { display:flex; align-items:flex-start; gap:8px; background:#fff; border:1px solid var(--border); border-radius:12px; padding:8px 10px; margin-bottom:8px; cursor:grab; }
+  .task input { width:auto; margin-top:4px; }
+  .task.done .t-title { text-decoration:line-through; opacity:.5; }
+  .task .info { flex:1; min-width:0; }
+  .t-title { font-weight:600; word-break:break-word; }
+  .laws { display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:14px; }
+  .law h3 { margin:0 0 6px; color:var(--primary); }
+  .law .tip { margin-top:8px; padding:8px 10px; background:var(--soft); border-left:4px solid var(--primary); border-radius:8px; font-size:.88rem; }
+  .timer { text-align:center; }
+  .time-display { font-size:4.5rem; font-weight:800; font-variant-numeric:tabular-nums; margin:10px 0; color:var(--primary); }
+  .modes { display:flex; justify-content:center; gap:8px; margin-bottom:12px; flex-wrap:wrap; }
+  .row { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-top:10px; }
+  .plan-item { display:flex; justify-content:space-between; gap:10px; padding:10px; border-bottom:1px solid var(--border); }
+  .plan-item:last-child { border-bottom:none; }
+
+  /* Musique */
+  .sound { display:flex; align-items:center; gap:12px; margin-bottom:10px; }
+  .sound .btn { min-width:180px; text-align:left; }
+  .yt { width:100%; height:315px; border:0; border-radius:14px; margin-top:12px; background:#eef0ff; }
+
+  /* Satisfaction */
+  .stars { display:flex; justify-content:space-between; gap:6px; margin:8px 0; }
+  .star, .mstar { flex:1; font-size:1.8rem; border:2px solid var(--border); border-radius:14px; background:#fbfcff; cursor:pointer; padding:6px 0; filter:grayscale(1); opacity:.65; transition:.15s; }
+  .star:hover, .mstar:hover { opacity:1; }
+  .star.on, .mstar.on { filter:none; opacity:1; border-color:var(--primary); background:var(--soft); transform:scale(1.04); }
+  .weeknav { display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:10px; }
+  .weeknav b { text-align:center; }
+  .banner { background:#fff6d9; border:1px solid #ffe29a; border-radius:12px; padding:8px 12px; font-size:.9rem; margin-bottom:12px; }
+  .mchart { display:flex; gap:10px; align-items:flex-end; height:250px; margin:10px 0; }
+  .mcol { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%; text-align:center; }
+  .mbar { width:100%; max-width:64px; border-radius:12px 12px 0 0; transition:height .3s; }
+  .mcount { font-weight:700; margin-bottom:4px; }
+  .memo { font-size:1.4rem; margin-top:6px; }
+  .mlab { font-size:.72rem; color:var(--muted); line-height:1.2; min-height:2.4em; }
+  .mood-item { display:flex; justify-content:space-between; align-items:center; gap:8px; padding:8px 0; border-bottom:1px solid var(--border); }
+  .mood-item:last-child { border-bottom:none; }
+
+  /* Colonne de droite */
+  aside.side { position:sticky; top:12px; height:calc(100vh - 24px); overflow-y:auto; background:var(--card); border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow); padding:14px; }
+  @media (max-width:1000px){ aside.side { position:static; height:auto; max-height:none; } }
+  .sidetabs { display:flex; gap:6px; margin-bottom:14px; }
+  .sidetabs button { flex:1; padding:7px 6px; }
+  .side-pane { display:none; } .side-pane.active { display:block; }
+  .day { border:1px solid var(--border); border-radius:12px; padding:8px 10px; margin-bottom:8px; }
+  .day.today { border-color:var(--primary); background:var(--soft); }
+  .slot { display:flex; justify-content:space-between; gap:8px; align-items:flex-start; padding:4px 0; font-size:.9rem; }
+  .note { border:1px solid var(--border); border-radius:12px; padding:8px 10px; margin-bottom:8px; background:#fffdf5; }
+  .note p { margin:6px 0 0; white-space:pre-wrap; word-break:break-word; }
+  .note-head { display:flex; justify-content:space-between; align-items:center; gap:6px; }
+  .ring { --p:0; width:130px; height:130px; border-radius:50%; margin:6px auto 4px; display:flex; align-items:center; justify-content:center;
+    background:conic-gradient(var(--primary) calc(var(--p) * 1%), var(--border) 0); }
+  .ring div { width:98px; height:98px; border-radius:50%; background:var(--card); display:flex; flex-direction:column; align-items:center; justify-content:center; }
+  .ring b { font-size:1.7rem; line-height:1; } .ring span { font-size:.7rem; color:var(--muted); }
+  .bar { height:9px; border-radius:99px; background:var(--border); overflow:hidden; margin:4px 0 2px; }
+  .bar i { display:block; height:100%; background:var(--primary); border-radius:99px; }
+  .bar.green i { background:var(--q2); }
+  .subj { margin-bottom:12px; }
+  .subj .line { display:flex; justify-content:space-between; font-size:.9rem; font-weight:600; }
+  .mini { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:12px 0; }
+  .mini div { background:var(--soft); border-radius:12px; padding:8px; text-align:center; }
+  .mini b { display:block; font-size:1.2rem; color:var(--primary); } .mini span { font-size:.75rem; color:var(--muted); }
+  .week { display:flex; align-items:flex-end; gap:6px; height:100px; margin:8px 0 14px; }
+  .week div { flex:1; text-align:center; font-size:.7rem; color:var(--muted); display:flex; flex-direction:column; justify-content:flex-end; height:100%; }
+  .week i { display:block; background:#a5abff; border-radius:6px 6px 0 0; min-height:2px; }
+
+  /* Fenêtre de satisfaction (fin de session) */
+  .modal { position:fixed; inset:0; background:rgba(45,50,80,.45); display:flex; align-items:center; justify-content:center; padding:16px; z-index:50; }
+  .modal .card { width:100%; max-width:440px; margin:0; }
+</style>
+</head>
+<body>
+
+<div id="storageWarn" class="hidden warn">⚠️ Ton navigateur bloque l'enregistrement local : tu peux utiliser le site, mais comptes et données disparaîtront quand tu fermeras la page. Ouvre plutôt le fichier .html directement dans Chrome, Edge ou Firefox (double-clic sur le fichier).</div>
+
+<!-- ================= CONNEXION / CRÉATION DE COMPTE ================= -->
+<div id="authScreen" class="screen">
+  <div class="card">
+    <div class="brand"><h1>📚 Study With Me</h1><p class="meta">Planifie, étudie, progresse.</p></div>
+    <div class="authtabs">
+      <button class="btn ghost on" data-auth="login" type="button">Connexion</button>
+      <button class="btn ghost" data-auth="register" type="button">Créer un compte</button>
+    </div>
+    <form id="loginForm" class="form">
+      <label>Email <input type="email" id="lEmail" required autocomplete="username"></label>
+      <label>Mot de passe <input type="password" id="lPw" required autocomplete="current-password"></label>
+      <button class="btn" type="submit">Se connecter</button>
+    </form>
+    <form id="registerForm" class="form hidden">
+      <label>Nom / prénom <input type="text" id="rName" required maxlength="40"></label>
+      <label>Email <input type="email" id="rEmail" required autocomplete="username"></label>
+      <label>Mot de passe (6 caractères minimum) <input type="password" id="rPw" required minlength="6" autocomplete="new-password"></label>
+      <label>Confirmer le mot de passe <input type="password" id="rPw2" required minlength="6" autocomplete="new-password"></label>
+      <button class="btn" type="submit">Créer mon compte</button>
+    </form>
+    <p class="err" id="authMsg"></p>
+    <p class="meta">🔒 Les comptes et les données sont enregistrés sur cet appareil, dans ce navigateur (pas de serveur). Le mot de passe est stocké sous forme chiffrée.</p>
+  </div>
+</div>
+
+<!-- ================= PROFIL ================= -->
+<div id="profileScreen" class="screen hidden">
+  <div class="card">
+    <div class="brand"><h1>🎓 Ton profil</h1><p class="meta">Ces informations personnalisent ton espace.</p></div>
+    <form id="profileForm" class="form">
+      <div>
+        <div class="meta" style="margin-bottom:6px">Tu es :</div>
+        <div class="radios">
+          <label><input type="radio" name="ptype" value="lycee"> Lycéen(ne)</label>
+          <label><input type="radio" name="ptype" value="etudiant" checked> Étudiant(e)</label>
+        </div>
+      </div>
+      <label>Niveau <select id="pLevel"></select></label>
+      <label>Section / filière
+        <input type="text" id="pSection" list="sections" required maxlength="60" placeholder="Choisis ou écris ta section">
+        <datalist id="sections"></datalist>
+      </label>
+      <div>
+        <label>Tes matières
+          <div class="row2">
+            <input type="text" id="pSubInput" maxlength="40" placeholder="Ex : Algorithmique (puis Entrée)">
+            <button class="btn small" type="button" id="pSubAdd">Ajouter</button>
+          </div>
+        </label>
+        <div class="chips" id="pSubs"></div>
+      </div>
+      <p class="err" id="pErr"></p>
+      <div class="row2">
+        <button class="btn" type="submit" style="flex:1">Enregistrer</button>
+        <button class="btn ghost hidden" type="button" id="pCancel">Annuler</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ================= APPLICATION ================= -->
+<div id="appScreen" class="hidden">
+  <div class="topbar">
+    <div>
+      <h1>📚 Study With Me</h1>
+      <div class="who" id="whoLine"></div>
+    </div>
+    <div class="row2">
+      <button class="btn small" id="editProfile" type="button">✏️ Mon profil</button>
+      <button class="btn small" id="logoutBtn" type="button">Déconnexion</button>
+    </div>
+  </div>
+
+  <div class="layout">
+    <!-- Colonne principale -->
+    <div>
+      <nav class="tabs">
+        <button class="active" data-tab="matrice">🧭 Matrice</button>
+        <button data-tab="plan">📅 Plan du jour</button>
+        <button data-tab="focus">⏱️ Focus</button>
+        <button data-tab="music">🎵 Musique</button>
+        <button data-tab="mood">😊 Satisfaction</button>
+        <button data-tab="lois">⚖️ Lois du temps</button>
+      </nav>
+
+      <!-- Matrice -->
+      <section class="tab active" id="matrice">
+        <div class="card">
+          <h2>Ajouter une tâche</h2>
+          <form class="add" id="taskForm">
+            <label>Tâche <input type="text" id="fTitle" placeholder="Ex : réviser le chapitre 3" required maxlength="100"></label>
+            <label>Matière <select id="fSubject"></select></label>
+            <label>Date limite <input type="date" id="fDue"></label>
+            <label>Durée estimée (min) <input type="number" id="fMin" min="5" max="600" step="5" value="60"></label>
+            <div class="checks">
+              <label><input type="checkbox" id="fImportant" checked> Importante</label>
+              <label><input type="checkbox" id="fUrgent"> Urgente</label>
+            </div>
+            <button class="btn" type="submit">+ Ajouter</button>
+          </form>
+          <p class="meta" style="margin:10px 0 0">💡 Une date limite dans moins de 48 h rend la tâche urgente. Glisse-dépose les tâches d'un quadrant à l'autre.</p>
+        </div>
+        <div class="stats" id="stats"></div>
+        <div class="matrix">
+          <div class="quad" data-q="1"><h3>🔥 Q1 · Faire maintenant</h3><small>Important + Urgent</small><div class="list"></div></div>
+          <div class="quad" data-q="2"><h3>🎯 Q2 · Planifier</h3><small>Important + Pas urgent</small><div class="list"></div></div>
+          <div class="quad" data-q="3"><h3>🤝 Q3 · Limiter / Déléguer</h3><small>Pas important + Urgent</small><div class="list"></div></div>
+          <div class="quad" data-q="4"><h3>🗑️ Q4 · Éliminer</h3><small>Pas important + Pas urgent</small><div class="list"></div></div>
+        </div>
+      </section>
+
+      <!-- Plan du jour -->
+      <section class="tab" id="plan">
+        <div class="card">
+          <h2>Ton plan de travail</h2>
+          <p class="meta">Ordre conseillé : Q1 d'abord, puis Q2, avec une marge de sécurité (loi de Hofstadter).</p>
+          <label style="max-width:260px">Temps d'étude disponible aujourd'hui (min)
+            <input type="number" id="avail" min="15" max="1000" step="15" value="180">
+          </label>
+          <div id="planSummary" class="meta" style="margin:10px 0"></div>
+          <div id="planList"></div>
+        </div>
+      </section>
+
+      <!-- Focus -->
+      <section class="tab" id="focus">
+        <div class="card timer">
+          <h2>Minuteur Pomodoro</h2>
+          <div class="modes">
+            <button class="btn ghost on" data-min="25" data-label="Travail" type="button">Travail 25 min</button>
+            <button class="btn ghost" data-min="5" data-label="Pause" type="button">Pause 5 min</button>
+            <button class="btn ghost" data-min="15" data-label="Longue pause" type="button">Longue pause 15 min</button>
+          </div>
+          <label style="max-width:320px;margin:0 auto">Tâche en cours <select id="focusTask"></select></label>
+          <div class="time-display" id="timeDisplay">25:00</div>
+          <div id="timerState" class="meta">Prêt</div>
+          <div class="row">
+            <button class="btn" id="startBtn" type="button">▶ Démarrer</button>
+            <button class="btn ghost" id="pauseBtn" type="button">⏸ Pause</button>
+            <button class="btn ghost" id="resetBtn" type="button">↺ Réinitialiser</button>
+            <button class="btn ghost" id="finishBtn" type="button">✔ Terminer la session</button>
+          </div>
+          <p class="meta" style="margin-top:14px">Sessions enregistrées aujourd'hui : <b id="pomoCount">0</b></p>
+        </div>
+      </section>
+
+      <!-- Musique -->
+      <section class="tab" id="music">
+        <div class="card">
+          <h2>🎧 Ambiances calmes</h2>
+          <p class="meta">Allume un ou plusieurs sons pour créer ton ambiance de concentration. Ils sont générés dans ton navigateur : ça marche sans internet, et le son continue quand tu changes d'onglet.</p>
+          <div id="soundList" style="margin-top:12px"></div>
+          <label style="margin-top:6px">Volume général
+            <input type="range" id="masterVol" min="0" max="100" value="60">
+          </label>
+          <div class="row" style="justify-content:flex-start"><button class="btn ghost small" id="stopAll" type="button">⏹ Tout arrêter</button></div>
+          <p class="err" id="audioMsg"></p>
+        </div>
+        <div class="card">
+          <h2>🎶 Ma musique (YouTube)</h2>
+          <p class="meta">Colle le lien d'une vidéo ou d'une playlist YouTube de musique calme (lofi, piano, classique…). Il faut une connexion internet.</p>
+          <div class="row2" style="margin-top:10px">
+            <input type="text" id="ytLink" placeholder="https://www.youtube.com/watch?v=...">
+            <button class="btn small" id="ytGo" type="button">Charger</button>
+          </div>
+          <p class="err" id="ytErr"></p>
+          <div id="ytBox"></div>
+          <div class="meta" style="margin-top:14px">Besoin d'idées ? Ouvre une recherche YouTube :</div>
+          <div class="chips" id="ytIdeas"></div>
+        </div>
+      </section>
+
+      <!-- Satisfaction -->
+      <section class="tab" id="mood">
+        <div class="card">
+          <h2>Ton niveau de satisfaction</h2>
+          <p class="meta">Comment te sens-tu par rapport à ton travail ? Donne ta note quand tu veux (fin de journée, après un cours…). Les notes données après les sessions Pomodoro sont aussi comptées.</p>
+          <div class="stars" id="moodStars">
+            <button class="mstar" type="button" data-v="1" title="Pas du tout satisfait">😞</button>
+            <button class="mstar" type="button" data-v="2" title="Peu satisfait">😕</button>
+            <button class="mstar" type="button" data-v="3" title="Moyen">😐</button>
+            <button class="mstar" type="button" data-v="4" title="Satisfait">🙂</button>
+            <button class="mstar" type="button" data-v="5" title="Très satisfait">😄</button>
+          </div>
+          <div id="moodLabel" class="meta" style="text-align:center;min-height:1.2em"></div>
+          <div class="row2" style="margin-top:10px">
+            <select id="moodSubject" style="flex:1"></select>
+            <input type="text" id="moodComment" maxlength="120" placeholder="Commentaire (facultatif)" style="flex:2">
+          </div>
+          <button class="btn" id="moodSave" type="button" style="margin-top:12px">Enregistrer ma satisfaction</button>
+          <p class="err" id="moodErr"></p><p class="ok" id="moodOk"></p>
+        </div>
+
+        <div class="card">
+          <h2>📊 Bilan de la semaine</h2>
+          <div class="weeknav">
+            <button class="btn ghost small" id="prevWeek" type="button">← Précédente</button>
+            <b id="weekTitle"></b>
+            <button class="btn ghost small" id="nextWeek" type="button">Suivante →</button>
+          </div>
+          <div id="weekBanner"></div>
+          <div class="mchart" id="moodChart"></div>
+          <div id="moodSummary" style="text-align:center"></div>
+        </div>
+
+        <div class="card">
+          <h2>Mes dernières satisfactions</h2>
+          <div id="moodList"></div>
+        </div>
+      </section>
+
+      <!-- Lois -->
+      <section class="tab" id="lois">
+        <div class="laws">
+          <div class="card law"><h3>Loi de Parkinson</h3>
+            <p>« Le travail s'étale pour occuper le temps disponible. »</p>
+            <div class="tip">✅ Fixe-toi une durée limite courte pour chaque tâche (time-boxing).</div></div>
+          <div class="card law"><h3>Loi de Pareto (80/20)</h3>
+            <p>20 % des efforts produisent environ 80 % des résultats.</p>
+            <div class="tip">✅ Les tâches marquées « Pareto » sont ton top 20 % à traiter en priorité.</div></div>
+          <div class="card law"><h3>Loi de Hofstadter</h3>
+            <p>Cela prend toujours plus de temps que prévu, même en en tenant compte.</p>
+            <div class="tip">✅ Ajoute 50 % de marge à tes estimations (fait automatiquement dans le plan).</div></div>
+          <div class="card law"><h3>Loi d'Illich</h3>
+            <p>Passé un seuil, travailler plus longtemps devient moins productif.</p>
+            <div class="tip">✅ Alterne travail et pauses avec le minuteur Pomodoro.</div></div>
+          <div class="card law"><h3>Loi de Carlson</h3>
+            <p>Travailler en continu est plus efficace que par petits morceaux dispersés.</p>
+            <div class="tip">✅ Coupe les notifications pendant un pomodoro.</div></div>
+          <div class="card law"><h3>Principe d'Eisenhower</h3>
+            <p>Ce qui est important est rarement urgent, et ce qui est urgent est rarement important.</p>
+            <div class="tip">✅ Passe le plus de temps possible dans Q2 pour éviter les urgences.</div></div>
+        </div>
+      </section>
+    </div>
+
+    <!-- Colonne de droite -->
+    <aside class="side">
+      <div class="sidetabs">
+        <button class="btn ghost small on" data-side="schedule" type="button">🗓️ Planning</button>
+        <button class="btn ghost small" data-side="notes" type="button">📝 Notes</button>
+        <button class="btn ghost small" data-side="progress" type="button">📈 Progrès</button>
+      </div>
+
+      <div class="side-pane active" id="side-schedule">
+        <h2 style="font-size:1.1rem">Emploi du temps</h2>
+        <form id="schedForm" class="form" style="margin-bottom:14px">
+          <div class="row2">
+            <select id="sDay"></select>
+            <select id="sSubject"></select>
+          </div>
+          <div class="row2">
+            <label style="flex:1">Début <input type="time" id="sStart" value="18:00" required></label>
+            <label style="flex:1">Fin <input type="time" id="sEnd" value="19:00" required></label>
+          </div>
+          <input type="text" id="sLabel" maxlength="60" placeholder="Détail (facultatif) : ex. TD 2">
+          <button class="btn small" type="submit">+ Ajouter le créneau</button>
+          <p class="err" id="sErr"></p>
+        </form>
+        <div id="schedList"></div>
+      </div>
+
+      <div class="side-pane" id="side-notes">
+        <h2 style="font-size:1.1rem">Mes notes</h2>
+        <form id="noteForm" class="form" style="margin-bottom:14px">
+          <select id="nSubject"></select>
+          <textarea id="nText" maxlength="1000" placeholder="Écris une note, une formule, une idée…" required></textarea>
+          <button class="btn small" type="submit">+ Enregistrer la note</button>
+        </form>
+        <div id="noteList"></div>
+      </div>
+
+      <div class="side-pane" id="side-progress">
+        <h2 style="font-size:1.1rem">Ma progression</h2>
+        <div class="ring" id="ring"><div><b id="ringVal">0%</b><span>progression</span></div></div>
+        <p class="meta" style="text-align:center;margin:0 0 10px">40 % tâches terminées · 40 % objectif de la semaine · 20 % satisfaction</p>
+        <div class="mini" id="miniStats"></div>
+        <label>Objectif hebdomadaire (heures) <input type="number" id="goalH" min="1" max="100" step="1"></label>
+        <div id="goalLine" class="meta" style="margin:6px 0 0"></div>
+        <div class="bar green"><i id="goalBar" style="width:0%"></i></div>
+        <h4 style="margin-top:16px">7 derniers jours (minutes)</h4>
+        <div class="week" id="weekChart"></div>
+        <h4>Par matière</h4>
+        <div id="subjProgress"></div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<!-- ================= FENÊTRE DE SATISFACTION (fin de session) ================= -->
+<div id="satModal" class="modal hidden">
+  <div class="card">
+    <h2>Session terminée 🎉</h2>
+    <p id="mInfo" class="meta"></p>
+    <label>Matière travaillée <select id="mSubject"></select></label>
+    <div class="meta" style="margin-top:12px">Ton niveau de satisfaction :</div>
+    <div class="stars" id="stars">
+      <button class="star" type="button" data-v="1" title="Pas du tout satisfait">😞</button>
+      <button class="star" type="button" data-v="2" title="Peu satisfait">😕</button>
+      <button class="star" type="button" data-v="3" title="Moyen">😐</button>
+      <button class="star" type="button" data-v="4" title="Satisfait">🙂</button>
+      <button class="star" type="button" data-v="5" title="Très satisfait">😄</button>
+    </div>
+    <div id="starLabel" class="meta" style="text-align:center;min-height:1.2em"></div>
+    <label style="margin-top:10px">Commentaire (facultatif) <input type="text" id="mComment" maxlength="120" placeholder="Ex : bien concentré, chapitre difficile…"></label>
+    <label class="checks" style="margin-top:10px"><span><input type="checkbox" id="mDone"> Marquer la tâche comme terminée</span></label>
+    <p class="err" id="mErr"></p>
+    <button class="btn" id="mSave" type="button" style="width:100%">Enregistrer la session</button>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ---------- Outils ---------- */
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+  function h(tag, attrs, ...kids) {
+    const e = document.createElement(tag);
+    for (const k in (attrs || {})) {
+      if (k.startsWith("on")) e.addEventListener(k.slice(2), attrs[k]);
+      else e.setAttribute(k, attrs[k]);
+    }
+    kids.flat().forEach(c => { if (c != null && c !== false) e.append(c.nodeType ? c : document.createTextNode(c)); });
+    return e;
+  }
+  const pad = n => String(n).padStart(2, "0");
+  const dkey = d => d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate());
+  const todayStr = () => dkey(new Date());
+  const newId = () => Date.now() + Math.floor(Math.random() * 100000);
+
+  /* ---------- Stockage (avec secours si le navigateur le bloque) ---------- */
+  const mem = {};
+  let persistent = true;
+  function warnStorage() {
+    const w = document.getElementById("storageWarn");
+    if (w) w.classList.remove("hidden");
+  }
+  try {
+    localStorage.setItem("__swm_test", "1");
+    localStorage.removeItem("__swm_test");
+  } catch (e) { persistent = false; warnStorage(); }
+  const load = (k, d) => {
+    try {
+      const raw = persistent ? localStorage.getItem(k) : (k in mem ? mem[k] : null);
+      if (raw == null) return d;
+      const v = JSON.parse(raw);
+      return v == null ? d : v;
+    } catch (e) { return d; }
+  };
+  const store = (k, v) => {
+    const s = JSON.stringify(v);
+    if (persistent) {
+      try { localStorage.setItem(k, s); return; } catch (e) { persistent = false; warnStorage(); }
+    }
+    mem[k] = s;
+  };
+  window.addEventListener("unhandledrejection", ev => {
+    const m = document.getElementById("authMsg");
+    if (m) m.textContent = "Erreur : " + ((ev.reason && ev.reason.message) || ev.reason);
+  });
+  window.addEventListener("error", ev => {
+    const m = document.getElementById("authMsg");
+    if (m) m.textContent = "Erreur : " + ev.message;
+  });
+
+  const USERS = "swm.users.v1", SESS = "swm.session.v1";
+  const DAYS = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"];
+  const LEVELS = {
+    lycee: ["1ère année secondaire", "2ème année secondaire", "3ème année secondaire", "4ème année secondaire (Bac)"],
+    etudiant: ["Licence 1 (L1)", "Licence 2 (L2)", "Licence 3 (L3)", "Master 1 (M1)", "Master 2 (M2)",
+      "Cycle ingénieur 1", "Cycle ingénieur 2", "Cycle ingénieur 3", "Doctorat"]
+  };
+  const SECTIONS = {
+    lycee: ["Mathématiques", "Sciences expérimentales", "Sciences techniques", "Sciences de l'informatique",
+      "Économie et gestion", "Lettres", "Sport"],
+    etudiant: ["Technologies de l'Information et de la Communication", "Informatique", "Génie électrique",
+      "Génie mécanique", "Gestion", "Économie", "Droit", "Médecine", "Langues"]
+  };
+  const MOODS = ["", "Pas du tout satisfait", "Peu satisfait", "Moyen", "Satisfait", "Très satisfait"];
+  const EMOJIS = ["", "😞", "😕", "😐", "🙂", "😄"];
+  const MOOD_COLORS = ["", "#ff8a8a", "#ffa66b", "#ffd166", "#a5d86e", "#5fd1a4"];
+
+  let user = null, data = null, DKEY = "";
+  const defData = () => ({ profile: null, tasks: [], sessions: [], notes: [], schedule: [], moods: [], music: null, goalHours: 10 });
+  const saveData = () => store(DKEY, data);
+
+  function show(id) {
+    ["authScreen", "profileScreen", "appScreen"].forEach(x => $("#" + x).classList.toggle("hidden", x !== id));
+  }
+
+  /* ---------- Mots de passe (hachage) ---------- */
+  function randSalt() {
+    try { const a = new Uint8Array(12); crypto.getRandomValues(a); return Array.from(a).map(b => pad(b.toString(16))).join(""); }
+    catch (e) { return String(Math.random()).slice(2); }
+  }
+  async function hash(pw, salt) {
+    try {
+      const enc = new TextEncoder();
+      const key = await crypto.subtle.importKey("raw", enc.encode(pw), "PBKDF2", false, ["deriveBits"]);
+      const bits = await crypto.subtle.deriveBits(
+        { name: "PBKDF2", salt: enc.encode(salt), iterations: 100000, hash: "SHA-256" }, key, 256);
+      return Array.from(new Uint8Array(bits)).map(b => pad(b.toString(16))).join("");
+    } catch (e) {
+      let x = 7; const s = salt + pw;
+      for (let i = 0; i < s.length; i++) x = (x * 31 + s.charCodeAt(i)) | 0;
+      return "f" + x;
+    }
+  }
+
+  /* ---------- Connexion / inscription ---------- */
+  $$("[data-auth]").forEach(b => b.addEventListener("click", () => {
+    $$("[data-auth]").forEach(x => x.classList.toggle("on", x === b));
+    $("#loginForm").classList.toggle("hidden", b.dataset.auth !== "login");
+    $("#registerForm").classList.toggle("hidden", b.dataset.auth !== "register");
+    $("#authMsg").textContent = "";
+  }));
+
+  $("#registerForm").addEventListener("submit", async e => {
+    e.preventDefault();
+    const msg = $("#authMsg");
+    const name = $("#rName").value.trim(), email = $("#rEmail").value.trim().toLowerCase();
+    const pw = $("#rPw").value, pw2 = $("#rPw2").value;
+    if (!name || !email.includes("@")) { msg.textContent = "Entre un nom et un email valides."; return; }
+    if (pw.length < 6) { msg.textContent = "Le mot de passe doit contenir au moins 6 caractères."; return; }
+    if (pw !== pw2) { msg.textContent = "Les deux mots de passe ne sont pas identiques."; return; }
+    const users = load(USERS, {});
+    if (users[email]) { msg.textContent = "Un compte existe déjà avec cet email."; return; }
+    const salt = randSalt();
+    users[email] = { name, salt, hash: await hash(pw, salt) };
+    store(USERS, users);
+    store(SESS, email);
+    e.target.reset();
+    startSession(email);
+  });
+
+  $("#loginForm").addEventListener("submit", async e => {
+    e.preventDefault();
+    const msg = $("#authMsg");
+    const email = $("#lEmail").value.trim().toLowerCase(), pw = $("#lPw").value;
+    const u = load(USERS, {})[email];
+    if (!u || (await hash(pw, u.salt)) !== u.hash) { msg.textContent = "Email ou mot de passe incorrect."; return; }
+    store(SESS, email);
+    e.target.reset();
+    startSession(email);
+  });
+
+  function startSession(email) {
+    const u = load(USERS, {})[email];
+    user = { email, name: u.name };
+    DKEY = "swm.data." + email;
+    data = Object.assign(defData(), load(DKEY, {}));
+    $("#authMsg").textContent = "";
+    weekOffset = 0;
+    if (!data.profile) openProfile(false); else enterApp();
+  }
+
+  $("#logoutBtn").addEventListener("click", () => {
+    stopTimer(); stopAllSounds();
+    if (persistent) { try { localStorage.removeItem(SESS); } catch (e) {} } else { delete mem[SESS]; }
+    user = null; data = null;
+    show("authScreen");
+  });
+
+  /* ---------- Profil ---------- */
+  let subj = [];
+  const curType = () => ($('input[name="ptype"]:checked') || {}).value || "etudiant";
+
+  function fillOptions(selLevel) {
+    const t = curType();
+    const lv = $("#pLevel"), sc = $("#sections");
+    lv.textContent = ""; sc.textContent = "";
+    LEVELS[t].forEach(l => lv.appendChild(h("option", { value: l }, l)));
+    SECTIONS[t].forEach(s => sc.appendChild(h("option", { value: s })));
+    if (selLevel && LEVELS[t].includes(selLevel)) lv.value = selLevel;
+  }
+  $$('input[name="ptype"]').forEach(r => r.addEventListener("change", () => fillOptions()));
+
+  function renderChips() {
+    const box = $("#pSubs");
+    box.textContent = "";
+    subj.forEach((s, i) => box.appendChild(h("span", { class: "chip" }, s,
+      h("button", { type: "button", title: "Retirer", onclick: () => { subj.splice(i, 1); renderChips(); } }, "✕"))));
+  }
+  function addSubject() {
+    const v = $("#pSubInput").value.trim();
+    if (!v) return;
+    if (subj.length >= 20) { $("#pErr").textContent = "20 matières maximum."; return; }
+    if (!subj.some(s => s.toLowerCase() === v.toLowerCase())) subj.push(v);
+    $("#pSubInput").value = "";
+    $("#pErr").textContent = "";
+    renderChips();
+  }
+  $("#pSubAdd").addEventListener("click", addSubject);
+  $("#pSubInput").addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); addSubject(); } });
+
+  function openProfile(editing) {
+    const p = data.profile || { type: "etudiant", level: "", section: "", subjects: [] };
+    $$('input[name="ptype"]').forEach(r => r.checked = r.value === p.type);
+    fillOptions(p.level);
+    $("#pSection").value = p.section;
+    subj = p.subjects.slice();
+    renderChips();
+    $("#pErr").textContent = "";
+    $("#pCancel").classList.toggle("hidden", !editing);
+    show("profileScreen");
+  }
+  $("#editProfile").addEventListener("click", () => openProfile(true));
+  $("#pCancel").addEventListener("click", () => show("appScreen"));
+
+  $("#profileForm").addEventListener("submit", e => {
+    e.preventDefault();
+    addSubject();
+    const section = $("#pSection").value.trim();
+    if (!section) { $("#pErr").textContent = "Indique ta section."; return; }
+    if (!subj.length) { $("#pErr").textContent = "Ajoute au moins une matière."; return; }
+    data.profile = { type: curType(), level: $("#pLevel").value, section, subjects: subj.slice() };
+    saveData();
+    enterApp();
+  });
+
+  function enterApp() {
+    $("#whoLine").textContent = "Bonjour " + user.name + " 👋";
+    show("appScreen");
+    renderAll();
+    resetTimer();
+  }
+
+  /* ---------- Menus de matières ---------- */
+  function fillSubjectSelect(sel, withGeneral) {
+    const prev = sel.value;
+    sel.textContent = "";
+    if (withGeneral) sel.appendChild(h("option", { value: "Général" }, "Général"));
+    data.profile.subjects.forEach(s => sel.appendChild(h("option", { value: s }, s)));
+    if ([...sel.options].some(o => o.value === prev)) sel.value = prev;
+  }
+
+  /* ---------- Onglets ---------- */
+  $$("nav.tabs button").forEach(b => b.addEventListener("click", () => {
+    $$("nav.tabs button").forEach(x => x.classList.remove("active"));
+    $$("section.tab").forEach(x => x.classList.remove("active"));
+    b.classList.add("active");
+    $("#" + b.dataset.tab).classList.add("active");
+    if (b.dataset.tab === "plan") renderPlan();
+    if (b.dataset.tab === "mood") renderMood();
+  }));
+  $$("[data-side]").forEach(b => b.addEventListener("click", () => {
+    $$("[data-side]").forEach(x => x.classList.toggle("on", x === b));
+    $$(".side-pane").forEach(p => p.classList.toggle("active", p.id === "side-" + b.dataset.side));
+    if (b.dataset.side === "progress") renderProgress();
+  }));
+
+  /* ---------- Tâches / matrice d'Eisenhower ---------- */
+  const quadOf = t => t.important ? (t.urgent ? 1 : 2) : (t.urgent ? 3 : 4);
+  const withBuffer = m => Math.ceil(m * 1.5 / 5) * 5; // Hofstadter : +50 %
+
+  function fmtDue(d) {
+    if (!d) return "";
+    const diff = Math.round((new Date(d + "T00:00:00") - new Date(todayStr() + "T00:00:00")) / 86400000);
+    const txt = new Date(d + "T00:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "short" });
+    if (diff < 0) return "⚠️ en retard (" + txt + ")";
+    if (diff === 0) return "📆 aujourd'hui";
+    if (diff === 1) return "📆 demain";
+    return "📆 " + txt;
+  }
+  function prioritySort(a, b) {
+    const qa = quadOf(a), qb = quadOf(b);
+    if (qa !== qb) return qa - qb;
+    if (a.due && b.due) return a.due.localeCompare(b.due);
+    if (a.due) return -1; if (b.due) return 1;
+    return a.id - b.id;
+  }
+  function paretoIds() {
+    const open = data.tasks.filter(t => !t.done).sort(prioritySort);
+    const n = Math.max(1, Math.ceil(open.length * 0.2));
+    return new Set(open.slice(0, n).map(t => t.id));
+  }
+
+  $("#fDue").addEventListener("change", () => {
+    const d = $("#fDue").value;
+    if (!d) return;
+    $("#fUrgent").checked = (new Date(d + "T00:00:00") - new Date(todayStr() + "T00:00:00")) / 86400000 <= 2;
+  });
+
+  $("#taskForm").addEventListener("submit", e => {
+    e.preventDefault();
+    const title = $("#fTitle").value.trim();
+    if (!title) return;
+    data.tasks.push({
+      id: newId(), title, subject: $("#fSubject").value, due: $("#fDue").value,
+      minutes: Math.max(5, parseInt($("#fMin").value, 10) || 30),
+      important: $("#fImportant").checked, urgent: $("#fUrgent").checked, done: false
+    });
+    saveData();
+    const keep = $("#fSubject").value;
+    e.target.reset();
+    $("#fSubject").value = keep;
+    $("#fImportant").checked = true;
+    $("#fMin").value = 60;
+    renderAll();
+  });
+
+  function taskEl(t, pareto) {
+    const cb = h("input", { type: "checkbox", title: "Terminée" });
+    cb.checked = t.done;
+    cb.addEventListener("change", () => { t.done = cb.checked; saveData(); renderAll(); });
+    const meta = h("div", { class: "meta" },
+      pareto && !t.done ? h("span", { class: "badge pareto" }, "Pareto 20 %") : null,
+      t.subject ? h("span", { class: "badge" }, t.subject) : null,
+      "⏳ " + t.minutes + " min (≈ " + withBuffer(t.minutes) + " avec marge)" + (t.due ? " · " + fmtDue(t.due) : ""));
+    const el = h("div", { class: "task" + (t.done ? " done" : ""), draggable: "true" },
+      cb,
+      h("div", { class: "info" }, h("div", { class: "t-title" }, t.title), meta),
+      h("button", { class: "icon", title: "Supprimer", onclick: () => {
+        data.tasks = data.tasks.filter(x => x.id !== t.id); saveData(); renderAll(); } }, "✕"));
+    el.addEventListener("dragstart", ev => {
+      ev.dataTransfer.setData("text/plain", String(t.id));
+      ev.dataTransfer.effectAllowed = "move";
+    });
+    return el;
+  }
+
+  function renderMatrix() {
+    const pareto = paretoIds();
+    $$(".quad").forEach(q => {
+      const list = $(".list", q);
+      list.textContent = "";
+      const items = data.tasks.filter(t => quadOf(t) === +q.dataset.q)
+        .sort((a, b) => (a.done - b.done) || prioritySort(a, b));
+      if (!items.length) list.appendChild(h("div", { class: "empty" }, "Aucune tâche ici."));
+      items.forEach(t => list.appendChild(taskEl(t, pareto.has(t.id))));
+    });
+  }
+
+  $$(".quad").forEach(q => {
+    q.addEventListener("dragover", e => { e.preventDefault(); q.classList.add("over"); });
+    q.addEventListener("dragleave", () => q.classList.remove("over"));
+    q.addEventListener("drop", e => {
+      e.preventDefault(); q.classList.remove("over");
+      const t = data.tasks.find(x => x.id === +e.dataTransfer.getData("text/plain"));
+      if (!t) return;
+      const n = +q.dataset.q;
+      t.important = (n === 1 || n === 2);
+      t.urgent = (n === 1 || n === 3);
+      saveData(); renderAll();
+    });
+  });
+
+  function renderStats() {
+    const open = data.tasks.filter(t => !t.done);
+    const done = data.tasks.length - open.length;
+    const mins = open.reduce((s, t) => s + withBuffer(t.minutes), 0);
+    const rate = data.tasks.length ? Math.round(done / data.tasks.length * 100) : 0;
+    const items = [
+      [open.length, "tâches à faire"],
+      [open.filter(t => quadOf(t) === 1).length, "à faire maintenant (Q1)"],
+      [open.filter(t => quadOf(t) === 2).length, "à planifier (Q2)"],
+      [(Math.round(mins / 6) / 10) + " h", "charge (avec marge)"],
+      [rate + " %", "tâches terminées"]
+    ];
+    const box = $("#stats");
+    box.textContent = "";
+    items.forEach(([v, l]) => box.appendChild(h("div", { class: "stat" }, h("b", {}, String(v)), h("span", {}, l))));
+  }
+
+  /* ---------- Plan du jour ---------- */
+  function renderPlan() {
+    const avail = Math.max(15, parseInt($("#avail").value, 10) || 180);
+    const open = data.tasks.filter(t => !t.done && quadOf(t) <= 2).sort(prioritySort);
+    const list = $("#planList");
+    list.textContent = "";
+    let used = 0, planned = 0;
+    open.forEach(t => {
+      const need = withBuffer(t.minutes);
+      const fits = used + need <= avail;
+      if (fits) { used += need; planned++; }
+      list.appendChild(h("div", { class: "plan-item" },
+        h("div", {},
+          h("div", { class: "t-title" }, (fits ? "✅ " : "⏭️ ") + t.title),
+          h("div", { class: "meta" }, "Q" + quadOf(t) + (t.subject ? " · " + t.subject : "") +
+            (t.due ? " · " + fmtDue(t.due) : "") + (fits ? "" : " · ne tient pas aujourd'hui → à reporter"))),
+        h("div", { class: "meta" }, "Limite (Parkinson) : " + t.minutes + " min · prévoir " + need + " min")));
+    });
+    if (!open.length) list.appendChild(h("p", { class: "empty" }, "Aucune tâche importante à planifier. Ajoute-en dans la matrice !"));
+    $("#planSummary").textContent = open.length
+      ? planned + " tâche(s) planifiée(s) · " + used + " min utilisées sur " + avail + " min disponibles." : "";
+  }
+  $("#avail").addEventListener("input", () => { if (data) renderPlan(); });
+
+  /* ---------- Minuteur Pomodoro + satisfaction de fin de session ---------- */
+  let total = 25 * 60, left = total, timerId = null, mode = "Travail";
+
+  function drawTimer() {
+    const m = pad(Math.floor(left / 60)), s = pad(left % 60);
+    $("#timeDisplay").textContent = m + ":" + s;
+    document.title = (timerId ? m + ":" + s + " · " : "") + "Study With Me";
+    if (data) $("#pomoCount").textContent = data.sessions.filter(x => x.date === todayStr()).length;
+  }
+  function stopTimer() { if (timerId) { clearInterval(timerId); timerId = null; } }
+  function resetTimer() { stopTimer(); left = total; $("#timerState").textContent = "Prêt"; drawTimer(); }
+
+  $$(".modes button").forEach(b => b.addEventListener("click", () => {
+    $$(".modes button").forEach(x => x.classList.remove("on"));
+    b.classList.add("on");
+    mode = b.dataset.label;
+    total = parseInt(b.dataset.min, 10) * 60;
+    resetTimer();
+  }));
+
+  $("#startBtn").addEventListener("click", () => {
+    if (timerId || left <= 0) return;
+    $("#timerState").textContent = mode + " en cours…";
+    timerId = setInterval(() => {
+      left--;
+      if (left <= 0) {
+        left = 0; stopTimer(); drawTimer(); beep();
+        if (mode === "Travail") openSat(Math.round(total / 60));
+        else $("#timerState").textContent = "Pause terminée. On reprend 💪";
+        return;
+      }
+      drawTimer();
+    }, 1000);
+    drawTimer();
+  });
+  $("#pauseBtn").addEventListener("click", () => { stopTimer(); $("#timerState").textContent = "En pause"; drawTimer(); });
+  $("#resetBtn").addEventListener("click", resetTimer);
+  $("#finishBtn").addEventListener("click", () => {
+    if (mode !== "Travail") { $("#timerState").textContent = "Choisis le mode « Travail » pour enregistrer une session."; return; }
+    const elapsed = Math.round((total - left) / 60);
+    if (elapsed < 1) { $("#timerState").textContent = "Travaille au moins 1 minute avant de terminer la session."; return; }
+    stopTimer(); drawTimer();
+    openSat(elapsed);
+  });
+
+  function beep() {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      o.connect(g); g.connect(ctx.destination);
+      o.frequency.value = 880; g.gain.value = 0.15;
+      o.start(); setTimeout(() => { o.stop(); ctx.close(); }, 500);
+    } catch (e) {}
+  }
+
+  function renderFocusSelect() {
+    const sel = $("#focusTask");
+    const prev = sel.value;
+    sel.textContent = "";
+    sel.appendChild(h("option", { value: "" }, "— Choisir une tâche (facultatif) —"));
+    data.tasks.filter(t => !t.done).sort(prioritySort).forEach(t =>
+      sel.appendChild(h("option", { value: String(t.id) }, "Q" + quadOf(t) + " · " + t.title)));
+    sel.value = prev;
+  }
+
+  let pending = null, rating = 0;
+  function updateStars() {
+    $$(".star").forEach(s => s.classList.toggle("on", +s.dataset.v === rating));
+    $("#starLabel").textContent = MOODS[rating] || "";
+  }
+  $$(".star").forEach(s => s.addEventListener("click", () => { rating = +s.dataset.v; updateStars(); $("#mErr").textContent = ""; }));
+
+  function openSat(minutes) {
+    const t = data.tasks.find(x => x.id === +$("#focusTask").value);
+    pending = { minutes, taskId: t ? t.id : null };
+    rating = 0; updateStars();
+    $("#mInfo").textContent = "Tu as travaillé " + minutes + " minute(s). Comment s'est passée cette session ?";
+    fillSubjectSelect($("#mSubject"), false);
+    if (t && t.subject) $("#mSubject").value = t.subject;
+    $("#mDone").checked = false;
+    $("#mDone").closest("label").classList.toggle("hidden", !t);
+    $("#mComment").value = "";
+    $("#mErr").textContent = "";
+    $("#satModal").classList.remove("hidden");
+  }
+
+  $("#mSave").addEventListener("click", () => {
+    if (!rating) { $("#mErr").textContent = "Choisis ton niveau de satisfaction pour enregistrer."; return; }
+    data.sessions.push({
+      id: newId(), date: todayStr(), subject: $("#mSubject").value, minutes: pending.minutes,
+      satisfaction: rating, comment: $("#mComment").value.trim(), taskId: pending.taskId
+    });
+    if ($("#mDone").checked && pending.taskId) {
+      const t = data.tasks.find(x => x.id === pending.taskId);
+      if (t) t.done = true;
+    }
+    saveData();
+    $("#satModal").classList.add("hidden");
+    pending = null;
+    resetTimer();
+    renderAll();
+  });
+
+  /* ---------- Musique : sons d'ambiance générés (Web Audio) ---------- */
+  const SOUNDS = [
+    { id: "rain",  name: "🌧️ Pluie douce",  scale: 0.35 },
+    { id: "ocean", name: "🌊 Vagues",        scale: 0.8 },
+    { id: "pad",   name: "🎹 Nappe calme",   scale: 0.5 },
+    { id: "brown", name: "🌫️ Bruit brun",    scale: 0.8 }
+  ];
+  const mix = {};
+  let actx = null, master = null;
+
+  function ensureAudio() {
+    if (actx) return true;
+    try {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      actx = new AC();
+      master = actx.createGain();
+      master.gain.value = $("#masterVol").value / 100;
+      master.connect(actx.destination);
+      return true;
+    } catch (e) { return false; }
+  }
+  function noiseBuffer(type) {
+    const len = actx.sampleRate * 4;
+    const buf = actx.createBuffer(1, len, actx.sampleRate);
+    const d = buf.getChannelData(0);
+    let last = 0;
+    for (let i = 0; i < len; i++) {
+      const w = Math.random() * 2 - 1;
+      if (type === "brown") { last = (last + 0.02 * w) / 1.02; d[i] = last * 3.5; }
+      else d[i] = w * 0.5;
+    }
+    return buf;
+  }
+  function build(id, out) {
+    const nodes = [];
+    const src = type => { const s = actx.createBufferSource(); s.buffer = noiseBuffer(type); s.loop = true; s.start(); nodes.push(s); return s; };
+    const filt = (type, f) => { const b = actx.createBiquadFilter(); b.type = type; b.frequency.value = f; return b; };
+    const lfo = (freq, depth, param) => {
+      const o = actx.createOscillator(); o.frequency.value = freq;
+      const g = actx.createGain(); g.gain.value = depth;
+      o.connect(g); g.connect(param); o.start(); nodes.push(o);
+    };
+    if (id === "rain") {
+      const s = src("white"), hp = filt("highpass", 900), lp = filt("lowpass", 7000);
+      s.connect(hp); hp.connect(lp); lp.connect(out);
+    } else if (id === "brown") {
+      const s = src("brown"), lp = filt("lowpass", 500);
+      s.connect(lp); lp.connect(out);
+    } else if (id === "ocean") {
+      const s = src("brown"), lp = filt("lowpass", 700), g = actx.createGain();
+      g.gain.value = 0.6;
+      s.connect(lp); lp.connect(g); g.connect(out);
+      lfo(0.1, 0.4, g.gain);
+    } else if (id === "pad") {
+      [110, 164.81, 220, 277.18, 329.63].forEach((f, i) => {
+        const o = actx.createOscillator(), g = actx.createGain();
+        o.type = "sine"; o.frequency.value = f; o.detune.value = i % 2 ? 4 : -4;
+        g.gain.value = 0.12;
+        o.connect(g); g.connect(out); o.start(); nodes.push(o);
+        lfo(0.05 + i * 0.013, 0.06, g.gain);
+      });
+    }
+    return nodes;
+  }
+  function stopSound(id) {
+    const m = mix[id];
+    m.nodes.forEach(n => { try { n.stop(); } catch (e) {} });
+    try { m.out.disconnect(); } catch (e) {}
+    m.nodes = []; m.out = null; m.on = false;
+  }
+  function stopAllSounds() {
+    SOUNDS.forEach(s => { if (mix[s.id] && mix[s.id].on) stopSound(s.id); });
+    $$("#soundList .btn").forEach(b => b.classList.remove("on"));
+  }
+  function toggleSound(s, btn) {
+    if (!ensureAudio()) { $("#audioMsg").textContent = "Ton navigateur ne permet pas de jouer du son ici."; return; }
+    $("#audioMsg").textContent = "";
+    try { actx.resume(); } catch (e) {}
+    const m = mix[s.id];
+    if (m.on) stopSound(s.id);
+    else {
+      m.out = actx.createGain();
+      m.out.gain.value = m.vol * s.scale;
+      m.out.connect(master);
+      m.nodes = build(s.id, m.out);
+      m.on = true;
+    }
+    btn.classList.toggle("on", m.on);
+  }
+  (function buildSoundUI() {
+    const box = $("#soundList");
+    SOUNDS.forEach(s => {
+      mix[s.id] = { on: false, vol: 0.6, out: null, nodes: [] };
+      const btn = h("button", { class: "btn ghost", type: "button" }, s.name);
+      const rng = h("input", { type: "range", min: "0", max: "100", value: "60", "aria-label": "Volume " + s.name });
+      btn.addEventListener("click", () => toggleSound(s, btn));
+      rng.addEventListener("input", () => {
+        mix[s.id].vol = rng.value / 100;
+        if (mix[s.id].out) mix[s.id].out.gain.value = mix[s.id].vol * s.scale;
+      });
+      box.appendChild(h("div", { class: "sound" }, btn, rng));
+    });
+  })();
+  $("#masterVol").addEventListener("input", () => { if (master) master.gain.value = $("#masterVol").value / 100; });
+  $("#stopAll").addEventListener("click", stopAllSounds);
+
+  /* ---------- Musique : lecteur YouTube ---------- */
+  function parseYT(url) {
+    let u;
+    try { u = new URL(url.trim()); } catch (e) { return null; }
+    const host = u.hostname.replace(/^www\./, "");
+    let id = null, list = u.searchParams.get("list");
+    if (host === "youtu.be") id = u.pathname.slice(1);
+    else if (host === "youtube.com" || host === "m.youtube.com" || host === "music.youtube.com") {
+      if (u.pathname === "/watch") id = u.searchParams.get("v");
+      else if (/^\/(embed|live|shorts)\//.test(u.pathname)) id = u.pathname.split("/")[2];
+    } else return null;
+    if (id && !/^[\w-]{11}$/.test(id)) id = null;
+    if (list && !/^[\w-]+$/.test(list)) list = null;
+    if (!id && !list) return null;
+    return { id, list };
+  }
+  function renderYT() {
+    const box = $("#ytBox");
+    box.textContent = "";
+    const m = data.music;
+    if (!m) return;
+    const base = "https://www.youtube-nocookie.com/embed/";
+    const src = m.id ? base + m.id + (m.list ? "?list=" + m.list : "") : base + "videoseries?list=" + m.list;
+    const href = m.id ? "https://www.youtube.com/watch?v=" + m.id + (m.list ? "&list=" + m.list : "")
+                      : "https://www.youtube.com/playlist?list=" + m.list;
+    box.appendChild(h("iframe", { class: "yt", src, title: "Lecteur YouTube",
+      allow: "autoplay; encrypted-media; picture-in-picture", allowfullscreen: "", referrerpolicy: "strict-origin-when-cross-origin" }));
+    box.appendChild(h("p", { class: "meta" }, "Si la vidéo ne s'affiche pas (certaines vidéos bloquent l'intégration), ",
+      h("a", { href, target: "_blank", rel: "noopener noreferrer" }, "ouvre-la directement sur YouTube"), "."));
+    box.appendChild(h("button", { class: "btn ghost small", type: "button", onclick: () => {
+      data.music = null; saveData(); renderYT(); } }, "Retirer la vidéo"));
+  }
+  $("#ytGo").addEventListener("click", () => {
+    const p = parseYT($("#ytLink").value);
+    if (!p) { $("#ytErr").textContent = "Lien YouTube non reconnu. Colle un lien de vidéo ou de playlist."; return; }
+    $("#ytErr").textContent = "";
+    data.music = p; saveData();
+    $("#ytLink").value = "";
+    renderYT();
+  });
+  (function buildIdeas() {
+    const ideas = [["🎧 Lofi pour étudier", "lofi study music"], ["🎹 Piano calme", "calm piano concentration"],
+      ["🎻 Classique pour réviser", "classical music for studying"], ["🌧️ Sons de pluie", "rain sounds for studying"]];
+    ideas.forEach(([label, q]) => $("#ytIdeas").appendChild(h("a", { class: "chip", target: "_blank", rel: "noopener noreferrer",
+      href: "https://www.youtube.com/results?search_query=" + encodeURIComponent(q) }, label)));
+  })();
+
+  /* ---------- Satisfaction : saisie + bilan hebdomadaire ---------- */
+  let moodRating = 0, weekOffset = 0;
+
+  function allRatings() {
+    return data.sessions.map(s => ({ date: s.date, v: s.satisfaction, subject: s.subject }))
+      .concat(data.moods.map(m => ({ date: m.date, v: m.v, subject: m.subject })));
+  }
+  function updateMoodStars() {
+    $$(".mstar").forEach(s => s.classList.toggle("on", +s.dataset.v === moodRating));
+    $("#moodLabel").textContent = MOODS[moodRating] || "";
+  }
+  $$(".mstar").forEach(s => s.addEventListener("click", () => {
+    moodRating = +s.dataset.v; updateMoodStars();
+    $("#moodErr").textContent = ""; $("#moodOk").textContent = "";
+  }));
+  $("#moodSave").addEventListener("click", () => {
+    if (!moodRating) { $("#moodErr").textContent = "Choisis d'abord un niveau de satisfaction."; return; }
+    data.moods.push({ id: newId(), date: todayStr(), v: moodRating, subject: $("#moodSubject").value, comment: $("#moodComment").value.trim() });
+    saveData();
+    moodRating = 0; updateMoodStars();
+    $("#moodComment").value = "";
+    $("#moodErr").textContent = "";
+    $("#moodOk").textContent = "Merci ! Ta satisfaction est enregistrée ✅";
+    weekOffset = 0;
+    renderMood(); renderProgress();
+  });
+  $("#prevWeek").addEventListener("click", () => { weekOffset--; renderMood(); });
+  $("#nextWeek").addEventListener("click", () => { if (weekOffset < 0) { weekOffset++; renderMood(); } });
+
+  function weekRange(off) {
+    const now = new Date();
+    const mon = new Date(now.getFullYear(), now.getMonth(), now.getDate() - ((now.getDay() + 6) % 7) + off * 7);
+    const sun = new Date(mon.getFullYear(), mon.getMonth(), mon.getDate() + 6);
+    return { mon, sun, from: dkey(mon), to: dkey(sun) };
+  }
+
+  function renderMood() {
+    const { mon, sun, from, to } = weekRange(weekOffset);
+    const fmt = d => d.toLocaleDateString("fr-FR", { day: "numeric", month: "short" });
+    $("#weekTitle").textContent = (weekOffset === 0 ? "Cette semaine" : weekOffset === -1 ? "Semaine dernière" : "Semaine") +
+      " · " + fmt(mon) + " – " + fmt(sun);
+    $("#nextWeek").disabled = weekOffset >= 0;
+
+    const banner = $("#weekBanner");
+    banner.textContent = "";
+    if (weekOffset === 0) {
+      banner.appendChild(h("div", { class: "banner" }, new Date().getDay() === 0
+        ? "🎉 C'est la fin de la semaine ! Voici ton bilan de satisfaction."
+        : "📅 Le bilan se complète au fil de la semaine. Il sera complet dimanche."));
+    }
+
+    const list = allRatings().filter(r => r.date >= from && r.date <= to);
+    const counts = [0, 0, 0, 0, 0, 0];
+    list.forEach(r => counts[r.v]++);
+    const totalR = list.length;
+    const maxC = Math.max(1, ...counts.slice(1));
+
+    const chart = $("#moodChart");
+    chart.textContent = "";
+    [5, 4, 3, 2, 1].forEach(v => {
+      const c = counts[v];
+      const bar = h("div", { class: "mbar", title: MOODS[v] + " : " + c });
+      bar.style.height = (c ? Math.max(10, Math.round(c / maxC * 130)) : 3) + "px";
+      bar.style.background = MOOD_COLORS[v];
+      chart.appendChild(h("div", { class: "mcol" },
+        h("div", { class: "mcount" }, String(c)), bar,
+        h("div", { class: "memo" }, EMOJIS[v]),
+        h("div", { class: "mlab" }, MOODS[v]),
+        h("div", { class: "meta" }, totalR ? Math.round(c / totalR * 100) + " %" : "")));
+    });
+
+    const sum = $("#moodSummary");
+    sum.textContent = "";
+    if (!totalR) {
+      sum.appendChild(h("p", { class: "empty" }, "Aucune satisfaction enregistrée pour cette semaine."));
+    } else {
+      const avg = list.reduce((a, r) => a + r.v, 0) / totalR;
+      let best = 5; [5, 4, 3, 2, 1].forEach(v => { if (counts[v] > counts[best]) best = v; });
+      sum.appendChild(h("p", {}, "Moyenne : ", h("b", {}, avg.toFixed(1) + " / 5"), " · " + totalR + " avis · le plus fréquent : ",
+        h("b", {}, EMOJIS[best] + " " + MOODS[best])));
+    }
+
+    const ml = $("#moodList");
+    ml.textContent = "";
+    data.moods.slice().sort((a, b) => b.id - a.id).slice(0, 10).forEach(m => ml.appendChild(h("div", { class: "mood-item" },
+      h("div", {}, h("b", {}, EMOJIS[m.v] + " " + MOODS[m.v]), " ", h("span", { class: "badge" }, m.subject),
+        h("div", { class: "meta" }, new Date(m.date + "T00:00:00").toLocaleDateString("fr-FR") + (m.comment ? " · " + m.comment : ""))),
+      h("button", { class: "icon", title: "Supprimer", onclick: () => {
+        data.moods = data.moods.filter(x => x.id !== m.id); saveData(); renderMood(); renderProgress(); } }, "✕"))));
+    if (!data.moods.length) ml.appendChild(h("p", { class: "empty" }, "Rien pour le moment."));
+  }
+
+  /* ---------- Planning (emploi du temps) ---------- */
+  function renderSchedule() {
+    const box = $("#schedList");
+    box.textContent = "";
+    const todayIdx = (new Date().getDay() + 6) % 7;
+    DAYS.forEach((d, i) => {
+      const slots = data.schedule.filter(s => s.day === i).sort((a, b) => a.start.localeCompare(b.start));
+      if (!slots.length) return;
+      box.appendChild(h("div", { class: "day" + (i === todayIdx ? " today" : "") },
+        h("h4", {}, d + (i === todayIdx ? " · aujourd'hui" : "")),
+        slots.map(s => h("div", { class: "slot" },
+          h("div", {}, h("b", {}, s.start + " – " + s.end), " " + s.subject,
+            s.label ? h("div", { class: "meta" }, s.label) : null),
+          h("button", { class: "icon", title: "Supprimer", onclick: () => {
+            data.schedule = data.schedule.filter(x => x.id !== s.id); saveData(); renderSchedule(); } }, "✕")))));
+    });
+    if (!box.children.length) box.appendChild(h("p", { class: "empty" }, "Aucun créneau pour le moment."));
+  }
+  $("#schedForm").addEventListener("submit", e => {
+    e.preventDefault();
+    const start = $("#sStart").value, end = $("#sEnd").value;
+    if (!start || !end || end <= start) { $("#sErr").textContent = "L'heure de fin doit être après l'heure de début."; return; }
+    $("#sErr").textContent = "";
+    data.schedule.push({ id: newId(), day: +$("#sDay").value, start, end, subject: $("#sSubject").value, label: $("#sLabel").value.trim() });
+    saveData();
+    $("#sLabel").value = "";
+    renderSchedule();
+  });
+
+  /* ---------- Notes ---------- */
+  function renderNotes() {
+    const box = $("#noteList");
+    box.textContent = "";
+    data.notes.slice().sort((a, b) => b.id - a.id).forEach(n => box.appendChild(h("div", { class: "note" },
+      h("div", { class: "note-head" },
+        h("span", {}, h("span", { class: "badge" }, n.subject), h("span", { class: "meta" }, n.date)),
+        h("button", { class: "icon", title: "Supprimer", onclick: () => {
+          data.notes = data.notes.filter(x => x.id !== n.id); saveData(); renderNotes(); } }, "✕")),
+      h("p", {}, n.text))));
+    if (!data.notes.length) box.appendChild(h("p", { class: "empty" }, "Aucune note pour le moment."));
+  }
+  $("#noteForm").addEventListener("submit", e => {
+    e.preventDefault();
+    const text = $("#nText").value.trim();
+    if (!text) return;
+    data.notes.push({ id: newId(), date: new Date().toLocaleDateString("fr-FR"), subject: $("#nSubject").value, text });
+    saveData();
+    $("#nText").value = "";
+    renderNotes();
+  });
+
+  /* ---------- Progression (calcul automatique) ---------- */
+  function computeProgress() {
+    const tasks = data.tasks, ses = data.sessions, rat = allRatings();
+    const done = tasks.filter(t => t.done).length;
+    const taskRate = tasks.length ? done / tasks.length : 0;
+
+    const now = new Date();
+    const monday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - ((now.getDay() + 6) % 7));
+    const mk = dkey(monday);
+    const weekMin = ses.filter(s => s.date >= mk).reduce((a, s) => a + s.minutes, 0);
+    const goalMin = Math.max(1, data.goalHours) * 60;
+    const goalRate = Math.min(1, weekMin / goalMin);
+
+    const avgSat = rat.length ? rat.reduce((a, r) => a + r.v, 0) / rat.length : 0;
+    const score = Math.round(100 * (0.4 * taskRate + 0.4 * goalRate + 0.2 * (avgSat / 5)));
+
+    const days = new Set(ses.map(s => s.date));
+    let streak = 0; const d = new Date();
+    if (!days.has(dkey(d))) d.setDate(d.getDate() - 1);
+    while (days.has(dkey(d))) { streak++; d.setDate(d.getDate() - 1); }
+
+    const last7 = [];
+    for (let i = 6; i >= 0; i--) {
+      const x = new Date(); x.setDate(x.getDate() - i);
+      const k = dkey(x);
+      last7.push({ label: x.toLocaleDateString("fr-FR", { weekday: "short" }),
+        min: ses.filter(s => s.date === k).reduce((a, s) => a + s.minutes, 0) });
+    }
+
+    const perSubject = data.profile.subjects.map(name => {
+      const ts = tasks.filter(t => t.subject === name), ss = ses.filter(s => s.subject === name);
+      const rs = rat.filter(r => r.subject === name);
+      return { name, total: ts.length, done: ts.filter(t => t.done).length,
+        minutes: ss.reduce((a, s) => a + s.minutes, 0),
+        sat: rs.length ? rs.reduce((a, r) => a + r.v, 0) / rs.length : null };
+    });
+    return { score, done, total: tasks.length, weekMin, goalMin, goalRate, avgSat, ratings: rat.length, sessions: ses.length,
+      totalMin: ses.reduce((a, s) => a + s.minutes, 0), streak, last7, perSubject };
+  }
+
+  function renderProgress() {
+    const p = computeProgress();
+    $("#ring").style.setProperty("--p", p.score);
+    $("#ringVal").textContent = p.score + "%";
+
+    const mini = $("#miniStats");
+    mini.textContent = "";
+    [[p.done + "/" + p.total, "tâches terminées"],
+     [p.sessions, "sessions"],
+     [(Math.round(p.totalMin / 6) / 10) + " h", "temps total"],
+     [p.ratings ? p.avgSat.toFixed(1) + "/5" : "–", "satisfaction moyenne"],
+     [p.streak + " j", "jours d'affilée"]]
+      .forEach(([v, l]) => mini.appendChild(h("div", {}, h("b", {}, String(v)), h("span", {}, l))));
+
+    $("#goalH").value = data.goalHours;
+    $("#goalLine").textContent = "Cette semaine : " + p.weekMin + " min sur " + p.goalMin + " min (" + Math.round(p.goalRate * 100) + " %)";
+    $("#goalBar").style.width = Math.round(p.goalRate * 100) + "%";
+
+    const max = Math.max(30, ...p.last7.map(x => x.min));
+    const wk = $("#weekChart");
+    wk.textContent = "";
+    p.last7.forEach(x => {
+      const bar = h("i", { title: x.min + " min" });
+      bar.style.height = Math.round(x.min / max * 80) + "px";
+      wk.appendChild(h("div", {}, x.min ? String(x.min) : "", bar, x.label));
+    });
+
+    const sp = $("#subjProgress");
+    sp.textContent = "";
+    p.perSubject.forEach(s => {
+      const rate = s.total ? Math.round(s.done / s.total * 100) : 0;
+      const fill = h("i", {});
+      fill.style.width = rate + "%";
+      sp.appendChild(h("div", { class: "subj" },
+        h("div", { class: "line" }, h("span", {}, s.name), h("span", {}, s.total ? rate + " %" : "–")),
+        h("div", { class: "bar" }, fill),
+        h("div", { class: "meta" }, s.done + "/" + s.total + " tâches · " + s.minutes + " min · " +
+          (s.sat != null ? "satisfaction " + s.sat.toFixed(1) + "/5" : "pas encore de note"))));
+    });
+  }
+  $("#goalH").addEventListener("change", () => {
+    const v = Math.min(100, Math.max(1, parseInt($("#goalH").value, 10) || 10));
+    data.goalHours = v; saveData(); renderProgress();
+  });
+
+  /* ---------- Rendu global ---------- */
+  function renderAll() {
+    fillSubjectSelect($("#fSubject"), false);
+    fillSubjectSelect($("#sSubject"), false);
+    fillSubjectSelect($("#nSubject"), true);
+    fillSubjectSelect($("#moodSubject"), true);
+    if (!$("#sDay").options.length) DAYS.forEach((d, i) => $("#sDay").appendChild(h("option", { value: String(i) }, d)));
+    renderStats(); renderMatrix(); renderPlan(); renderFocusSelect();
+    renderSchedule(); renderNotes(); renderProgress(); renderMood(); renderYT(); drawTimer();
+  }
+
+  /* ---------- Démarrage : reconnexion automatique ---------- */
+  const last = load(SESS, null);
+  if (last && load(USERS, {})[last]) startSession(last);
+})();
+</script>
+</body>
+</html>
+
